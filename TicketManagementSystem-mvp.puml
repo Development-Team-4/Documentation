@@ -1,0 +1,34 @@
+@startuml
+left to right direction
+
+actor User
+actor "Backend Client (S2S)" as S2S
+
+rectangle "Ticket Management System (MVP)" {
+
+  User -- (Register)
+  User -- (Authenticate via Session)
+
+  S2S -- (Authenticate via JWT)
+
+  User -- (Create Ticket)
+  User -- (View Ticket)
+  User -- (Add Comment)
+
+  User -- (Assign Executor)
+  User -- (Change Ticket Status)
+
+  User -- (Search / Filter Tickets)
+
+  (Search / Filter Tickets) ..> (Filter by Status) : <<include>>
+  (Search / Filter Tickets) ..> (Filter by Category) : <<include>>
+  (Search / Filter Tickets) ..> (Filter by Executor) : <<include>>
+  (Search / Filter Tickets) ..> (Filter by Date) : <<include>>
+
+  (Create Ticket) ..> (Persist Changes) : <<include>>
+  (Add Comment) ..> (Persist Changes) : <<include>>
+  (Change Ticket Status) ..> (Persist Changes) : <<include>>
+  (Assign Executor) ..> (Persist Changes) : <<include>>
+}
+
+@enduml
