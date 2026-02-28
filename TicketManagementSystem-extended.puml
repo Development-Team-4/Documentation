@@ -1,0 +1,62 @@
+@startuml
+left to right direction
+
+actor User
+actor "Backend Client (S2S)" as S2S
+actor "Notification Service" as Notify
+actor "Scheduler" as Scheduler
+actor "AI Service" as AI
+actor "Object Storage (S3)" as S3
+
+rectangle "Ticket Management System (Extended)" {
+
+    User -- (Register)
+    User -- (Authenticate via Session)
+
+    User -- (Search / Filter Tickets)
+
+    (Search / Filter Tickets) ..> (Filter by Status) : <<include>>
+    (Search / Filter Tickets) ..> (Filter by Category) : <<include>>
+    (Search / Filter Tickets) ..> (Filter by Executor) : <<include>>
+    (Search / Filter Tickets) ..> (Filter by Date) : <<include>>
+
+    User -- (Create Ticket)
+    User -- (Add Comment)
+    User -- (Assign Executor)
+    User -- (Change Ticket Status)
+
+    (Create Ticket) ..> (Calculate SLA) : <<include>>
+    (Create Ticket) ..> (Record Audit Event) : <<include>>
+    (Change Ticket Status) ..> (Record Audit Event) : <<include>>
+    (Assign Executor) ..> (Record Audit Event) : <<include>>
+    (Add Comment) ..> (Record Audit Event) : <<include>>
+    (Assign Executor) <.. (Get Executor Recommendation) : <<extend>>
+
+    User -- (Add Attachment)
+    User -- (Download Attachment)
+
+    (Add Attachment) ..> (Store File in S3) : <<include>>
+    (Download Attachment) ..> (Retrieve File from S3) : <<include>>
+
+    Scheduler -- (Monitor SLA)
+    (Monitor SLA) <.. (Trigger Escalation) : <<extend>>
+
+    (Trigger Escalation) ..> (Send Notification) : <<include>>
+    Notify -- (Send Notification)
+
+    S2S -- (Authenticate via JWT)
+    AI -- (Get Executor Recommendation)
+    S3 -- (Store File in S3)
+    S3 -- (Retrieve File from S3)
+}
+
+    note left of AI
+        Optional integration
+        Depends on an external API
+    end note
+
+    note left of S3
+        Optional integration
+        Complexity risk
+    end note
+@enduml
