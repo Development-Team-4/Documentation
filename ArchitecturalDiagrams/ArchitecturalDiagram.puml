@@ -1,0 +1,83 @@
+@startuml
+title Ticket Managment System
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor User
+actor "Backend Client" as S2S
+
+component "Email Provider" as Email
+component "Telegram API" as Telegram
+component "External AI Service" as AI
+component "S3 Object Storage" as S3
+
+rectangle "Ticketing Platform" {
+
+  rectangle "API Gateway" as Gateway
+
+  package "Auth Context" {
+    component "Auth Service\n(JWT + Sessions)" as AuthService
+    database "Auth DB" as AuthDB
+    component "Redis" as Redis
+  }
+
+  package "Ticket Context" {
+    component "Ticket Service\n(Tickets, Comments,\nAssignment, Search)" as TicketService
+    component "SLA Scheduler" as Scheduler
+    component "Audit Module" as Audit
+    component "AI Client" as AIClient
+    database "Ticket DB" as TicketDB
+  }
+
+  package "Notification Context" {
+    component "Notification Service" as NotificationService
+    database "Notification DB" as NotificationDB
+  }
+
+  queue "Kafka Cluster" as Kafka
+
+  package "Observability" {
+    component "Logstash"
+    component "Prometheus"
+    component "Grafana"
+  }
+}
+
+User --> Gateway : HTTPS(Session)
+S2S --> Gateway : HTTPS(JWT)
+
+Gateway --> AuthService
+Gateway --> TicketService
+
+AuthService --> AuthDB
+AuthService --> Redis
+
+TicketService --> TicketDB
+TicketService --> Kafka : Publish events\n(TicketCreated, StatusChanged,\nSLAExpired, ExecutorAssigned)
+TicketService --> S3 : Upload/Download attachments
+TicketService --> AIClient
+AIClient --> AI
+
+Scheduler --> TicketService : Monitor SLA
+Scheduler --> Kafka : Publish SLAExpired
+
+TicketService --> Audit : Record changes
+
+Kafka --> NotificationService : Consume events
+NotificationService --> NotificationDB
+NotificationService --> Email
+NotificationService --> Telegram
+
+AuthService --> Logstash
+TicketService --> Logstash
+NotificationService --> Logstash
+
+AuthService --> Prometheus
+TicketService --> Prometheus
+NotificationService --> Prometheus
+
+Prometheus --> Grafana
+
+@enduml
