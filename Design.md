@@ -1,0 +1,8 @@
+![dashboard](images/dashboard.jpg)
+![tickets](images/tickets.jpg)
+![notification](images/notification.jpg)
+![settings](images/settings.jpg)
+![createTicket](images/createTicket.jpg)
+![registration](images/registration.jpg)
+![signIn](images/signIn.jpg)
+![ticketsDetails](images/ticketsDetails.jpg)
