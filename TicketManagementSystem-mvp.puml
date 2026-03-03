@@ -1,34 +1,47 @@
 @startuml
 left to right direction
 
-actor User
-actor "Backend Client (S2S)" as S2S
+actor "Пользователь" as User
+actor "Сотрудник поддержки" as Support
+actor "Администратор" as Admin
 
-rectangle "Ticket Management System (MVP)" {
+rectangle "Система обработки обращений (MVP)" {
 
-  User -- (Register)
-  User -- (Authenticate via Session)
+  User -- (Зарегистрироваться)
+  User -- (Аутентификация)
+  User -- (Создать тикет)
+  User -- (Просмотреть свои тикеты)
+  User -- (Редактировать свой тикет)
+  User -- (Удалить свой тикет)
+  User -- (Добавить комментарий к своему тикету)
+  User -- (Настроить каналы уведомлений)
 
-  S2S -- (Authenticate via JWT)
+  Support -- (Аутентификация)
+  Support -- (Просмотреть тикеты своей категории)
+  Support -- (Просмотреть назначенные на него тикеты)
+  Support -- (Взять тикет в работу)
+  Support -- (Изменить статус назначенного тикета)
+  Support -- (Добавить комментарий к назначенному тикету)
+  Support -- (Закрыть назначенный тикет)
 
-  User -- (Create Ticket)
-  User -- (View Ticket)
-  User -- (Add Comment)
+  Admin -- (Аутентификация)
+  Admin -- (Создать тему)
+  Admin -- (Редактировать тему)
+  Admin -- (Создать категорию)
+  Admin -- (Назначить сотрудников категории)
+  Admin -- (Зарегистрировать сотрудника поддержки)
+  Admin -- (Просмотреть тикеты категории)
+  Admin -- (Просмотреть статистику)
+  Admin -- (Переназначить исполнителя)
+  Admin -- (Изменить статус любого тикета)
 
-  User -- (Assign Executor)
-  User -- (Change Ticket Status)
+  (Создать тикет) ..> (Присвоить категорию) : <<include>>
+  (Создать категорию) ..> (Привязать к теме) : <<include>>
 
-  User -- (Search / Filter Tickets)
-
-  (Search / Filter Tickets) ..> (Filter by Status) : <<include>>
-  (Search / Filter Tickets) ..> (Filter by Category) : <<include>>
-  (Search / Filter Tickets) ..> (Filter by Executor) : <<include>>
-  (Search / Filter Tickets) ..> (Filter by Date) : <<include>>
-
-  (Create Ticket) ..> (Persist Changes) : <<include>>
-  (Add Comment) ..> (Persist Changes) : <<include>>
-  (Change Ticket Status) ..> (Persist Changes) : <<include>>
-  (Assign Executor) ..> (Persist Changes) : <<include>>
+  (Взять тикет в работу) ..> (Назначить исполнителя) : <<include>>
+  (Изменить статус назначенного тикета) ..> (Отправить уведомление) : <<include>>
+  (Изменить статус любого тикета) ..> (Отправить уведомление) : <<include>>
+  (Добавить комментарий к назначенному тикету) ..> (Отправить уведомление) : <<include>>
 }
 
 @enduml
