@@ -1,0 +1,108 @@
+@startuml
+
+actor Пользователь
+actor "Сотрудник поддержки" as Support
+actor "Администратор" as Admin
+
+participant Frontend
+participant "API Gateway" as Gateway
+participant "Ticket Service" as TicketService
+database "Ticket DB" as TicketDB
+participant "Notification Service" as NotificationService
+database "Notification DB" as NotificationDB
+
+
+== Создание тикета ==
+
+Пользователь -> Frontend : ввод данных тикета
+Frontend -> Gateway : запрос создания тикета
+
+Gateway -> Gateway : проверка аутентификации\nи роли пользователя
+Gateway -> TicketService : передача запроса создания тикета
+
+TicketService -> TicketService : определить категорию тикета
+TicketService -> TicketDB : сохранить тикет
+TicketDB --> TicketService : тикет сохранён
+
+TicketService -> NotificationService : событие "создан тикет"
+
+NotificationService -> NotificationDB : сохранить уведомление
+
+TicketService --> Gateway : тикет создан
+Gateway --> Frontend : результат операции
+
+
+== Просмотр тикетов сотрудником ==
+
+Support -> Frontend : открыть список тикетов категории
+Frontend -> Gateway : запрос списка тикетов
+
+Gateway -> Gateway : проверка аутентификации\nи роли сотрудника
+Gateway -> TicketService : запрос тикетов категории
+
+TicketService -> TicketDB : получить тикеты
+TicketDB --> TicketService : список тикетов
+
+TicketService --> Gateway : вернуть тикеты
+Gateway --> Frontend : список тикетов
+
+
+== Сотрудник берет тикет ==
+
+Support -> Frontend : взять тикет в работу
+Frontend -> Gateway : запрос назначения исполнителя
+
+Gateway -> TicketService : передача запроса
+
+TicketService -> TicketDB : назначить исполнителя
+TicketDB --> TicketService : OK
+
+TicketService -> NotificationService : событие "исполнитель назначен"
+
+NotificationService -> NotificationDB : сохранить уведомление
+
+
+== Изменение статуса ==
+
+Support -> Frontend : изменить статус тикета
+Frontend -> Gateway : запрос изменения статуса
+
+Gateway -> TicketService : передача запроса
+
+TicketService -> TicketDB : обновить статус
+TicketDB --> TicketService : OK
+
+TicketService -> NotificationService : событие "статус изменён"
+NotificationService -> NotificationDB : сохранить уведомление
+
+
+== Закрытие тикета ==
+
+Support -> Frontend : закрыть тикет
+Admin -> Frontend : закрыть тикет
+Frontend -> Gateway : запрос закрытия тикета
+
+Gateway -> TicketService : передача запроса
+
+TicketService -> TicketDB : обновить статус на "закрыт"
+TicketDB --> TicketService : OK
+
+TicketService -> NotificationService : событие "тикет закрыт"
+NotificationService -> NotificationDB : сохранить уведомление
+
+
+== Управление категориями (администратор) ==
+
+Admin -> Frontend : создать или изменить категорию
+Frontend -> Gateway : запрос изменения структуры
+
+Gateway -> Gateway : проверка роли администратора
+Gateway -> TicketService : передача запроса
+
+TicketService -> TicketDB : сохранить изменения категории
+TicketDB --> TicketService : OK
+
+TicketService --> Gateway : операция выполнена
+Gateway --> Frontend : результат операции
+
+@enduml
