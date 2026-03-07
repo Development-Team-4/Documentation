@@ -28,11 +28,18 @@ rectangle "Ticketing Platform" {
     database "Notification DB" as NotificationDB
   }
 
+  queue "Kafka Cluster" as Kafka
+
+  package "Observability" {
+    component "Logstash"
+    component "Prometheus"
+    component "Grafana"
+  }
 }
 
 User --> Gateway : HTTPS(Session)
 S2S --> Gateway : HTTPS(JWT)
-TicketService --> NotificationService
+
 Gateway --> AuthService
 Gateway --> TicketService
 
@@ -40,7 +47,19 @@ AuthService --> AuthDB
 AuthService --> Redis
 
 TicketService --> TicketDB
+TicketService --> Kafka : Publish events\n(TicketCreated, StatusChanged)
 
+Kafka --> NotificationService : Consume events
 NotificationService --> NotificationDB
+
+AuthService --> Logstash
+TicketService --> Logstash
+NotificationService --> Logstash
+
+AuthService --> Prometheus
+TicketService --> Prometheus
+NotificationService --> Prometheus
+
+Prometheus --> Grafana
 
 @enduml
